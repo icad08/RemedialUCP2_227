@@ -4,11 +4,11 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import com.example.perpusucp.data.entity.Buku
 import com.example.perpusucp.data.entity.BukuPenulisCrossRef
 import com.example.perpusucp.data.entity.EksemplarBuku
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BukuDao {
@@ -20,6 +20,9 @@ interface BukuDao {
 
     @Query("SELECT * FROM buku WHERE kategoriId = :kategoriId AND isDeleted = 0")
     suspend fun getBukuByKategori(kategoriId: Int): List<Buku>
+
+    @Query("SELECT * FROM buku WHERE isDeleted = 0 ORDER BY judul ASC")
+    fun getAllBuku(): Flow<List<Buku>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertEksemplar(eksemplar: EksemplarBuku)

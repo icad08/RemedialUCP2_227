@@ -4,12 +4,16 @@ import androidx.room.withTransaction
 import com.example.perpusucp.data.PerpusDatabase
 import com.example.perpusucp.data.entity.AuditLog
 import com.example.perpusucp.data.entity.Buku
+import com.example.perpusucp.data.entity.EksemplarBuku
 import com.example.perpusucp.data.entity.Kategori
 import kotlinx.coroutines.flow.Flow
+import java.util.UUID
 
 class OfflinePerpusRepository(private val db: PerpusDatabase) : PerpusRepository {
 
     override fun getAllKategori(): Flow<List<Kategori>> = db.kategoriDao().getAllKategori()
+
+    override fun getAllBuku(): Flow<List<Buku>> = db.bukuDao().getAllBuku()
 
     override suspend fun insertKategori(kategori: Kategori) {
         db.withTransaction {
@@ -47,7 +51,7 @@ class OfflinePerpusRepository(private val db: PerpusDatabase) : PerpusRepository
             val bukuDipinjamCount = db.bukuDao().countBukuDipinjamDiKategori(kategori.id)
 
             if (bukuDipinjamCount > 0) {
-                throw Exception("Gagal menghapus: Ada $bukuDipinjamCount buku sedang dipinjam.")
+                throw Exception("Gagal: Ada $bukuDipinjamCount buku dipinjam di kategori ini (Rollback Active)")
             }
 
             val bukuList = db.bukuDao().getBukuByKategori(kategori.id)
@@ -80,5 +84,15 @@ class OfflinePerpusRepository(private val db: PerpusDatabase) : PerpusRepository
 
     override suspend fun getBukuByKategori(kategoriId: Int): List<Buku> {
         return db.bukuDao().getBukuByKategori(kategoriId)
+    }
+
+    override suspend fun simulasiPinjamBuku(bukuId: Int) {
+        val dummyEksemplar = EksemplarBuku(
+            kodeEksemplar = UUID.randomUUID().toString().substring(0, 8),
+            bukuId = bukuId,
+            status = "Dipinjam",
+            kondisi = "Baik"
+        )
+        db.bukuDao().insertEksemplar(dummyEksemplar)
     }
 }

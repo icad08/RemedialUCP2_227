@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface PerpusRepository {
     fun getAllKategori(): Flow<List<Kategori>>
+    fun getAllBuku(): Flow<List<Buku>>
     suspend fun insertKategori(kategori: Kategori)
     suspend fun updateKategori(kategori: Kategori)
 
@@ -13,4 +14,6 @@ interface PerpusRepository {
 
     suspend fun insertBuku(buku: Buku)
     suspend fun getBukuByKategori(kategoriId: Int): List<Buku>
+
+    suspend fun simulasiPinjamBuku(bukuId: Int)
 }

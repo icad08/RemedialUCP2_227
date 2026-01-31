@@ -7,9 +7,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.perpusucp.data.entity.Buku
 import com.example.perpusucp.data.repository.PerpusRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class BukuViewModel(private val repository: PerpusRepository) : ViewModel() {
+
+    val allBuku: StateFlow<List<Buku>> = repository.getAllBuku()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     var bukuUiState by mutableStateOf(BukuUiState())
         private set
@@ -24,6 +34,12 @@ class BukuViewModel(private val repository: PerpusRepository) : ViewModel() {
                 repository.insertBuku(bukuUiState.toBuku())
                 bukuUiState = BukuUiState()
             }
+        }
+    }
+
+    fun pinjamBuku(bukuId: Int) {
+        viewModelScope.launch {
+            repository.simulasiPinjamBuku(bukuId)
         }
     }
 
